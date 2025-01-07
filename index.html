@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Mark Entry</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2e9e1;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #003366;
+            font-size: 2.5em;
+        }
+        hr {
+            margin: 20px 0;
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, #cce7e8, #99d6d6, #cce7e8);
+        }
+        .split-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        .left-half, .right-half {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+        }
+        .left-half {
+            border-right: 1px solid #d0d0d0;
+            background-color: #ffffff;
+            width: 40%;
+        }
+        .right-half {
+            background-color: #eaf2f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 60%;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .button-container button {
+            background-color: #ff6f61;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .button-container button:hover {
+            background-color: #ff4c43;
+            transform: scale(1.05);
+        }
+        .button-container button:active {
+            transform: scale(0.95);
+        }
+        .image-container {
+            width: 100%;
+            height: calc(100% - 80px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #submitButton, #downloadButton {
+            position: absolute;
+            background-color: #ff6f61;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        #submitButton:hover, #downloadButton:hover {
+            background-color: #ff4c43;
+            transform: scale(1.05);
+        }
+        #submitButton:active, #downloadButton:active {
+            transform: scale(0.95);
+        }
+        #submitButton {
+            bottom: 20px;
+            right: 20px;
+        }
+        #downloadButton {
+            bottom: 20px;
+            left: 20px;
+        }
+        .excel-container {
+            width: 100%;
+            height: 80%;
+            overflow: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Automated Mark Entry</h1>
+        <hr>
+        <div class="split-container">
+            <div class="left-half">
+                <div class="button-container">
+                    <button id="chooseFolderButton">Choose Folder</button>
+                    <button id="prevButton" disabled>Previous</button>
+                    <button id="nextButton" disabled>Next</button>
+                </div>
+                <div class="image-container">
+                    <div id="uploadMessage">Upload folder</div>
+                    <img id="currentImage" style="display: none;" alt="Current Image">
+                    <button id="submitButton">Submit</button>
+                    <button id="downloadButton">Download Excel</button>
+                </div>
+            </div>
+            <div class="right-half">
+                <div class="excel-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>1a</th>
+                                <th>1b</th>
+                                <th>1c</th>
+                                <th>1d</th>
+                                <th>1e</th>
+                                <th>1f</th>
+                                <th>1g</th>
+                                <th>1h</th>
+                                <th>1i</th>
+                                <th>1j</th>
+                                <th>2a</th>
+                                <th>2b</th>
+                                <th>3a</th>
+                                <th>3b</th>
+                                <th>4a</th>
+                                <th>4b</th>
+                                <th>5a</th>
+                                <th>5b</th>
+                                <th>6a</th>
+                                <th>6b</th>
+                                <th>7a</th>
+                                <th>7b</th>
+                                <th>8a</th>
+                                <th>8b</th>
+                                <th>9a</th>
+                                <th>9b</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('chooseFolderButton').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.webkitdirectory = true;
+            input.multiple = true;  // Ensure multiple files can be selected
+            input.addEventListener('change', (e) => {
+                const formData = new FormData();
+                for (let i = 0; i < e.target.files.length; i++) {
+                    formData.append('folder', e.target.files[i]);
+                }
+                
+                fetch('/choose-folder', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('uploadMessage').style.display = 'none';
+                        document.getElementById('currentImage').style.display = 'block';
+                        document.getElementById('currentImage').src = data.image_path;
+                        document.getElementById('submitButton').style.display = 'block';
+                        document.getElementById('downloadButton').style.display = 'block';
+                        document.getElementById('prevButton').disabled = false;
+                        document.getElementById('nextButton').disabled = false;
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+            input.click();
+        });
+
+        document.getElementById('nextButton').addEventListener('click', () => {
+            fetch('/next-image')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.image_path) {
+                        document.getElementById('currentImage').src = data.image_path;
+                    } else {
+                        alert('No more images available.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('prevButton').addEventListener('click', () => {
+            fetch('/prev-image')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.image_path) {
+                        document.getElementById('currentImage').src = data.image_path;
+                    } else {
+                        alert('This is the first image.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('submitButton').addEventListener('click', () => {
+            const imagePath = document.getElementById('currentImage').src;
+            fetch('/submit-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image_path: imagePath })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const predictions = data.predictions;
+                    const tableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+                    const newRow = document.createElement('tr');
+                    const snCell = document.createElement('td');
+                    snCell.textContent = tableBody.rows.length + 1;
+                    newRow.appendChild(snCell);
+
+                    // Define the column names to display 0 for specific columns in rows 1, 2, and 3
+                    const rowZeroColumns = {
+                        1: ['3a', '3b', '4a', '4b', '7a', '7b', '9a', '9b'],
+                        2: ['2a', '2b', '4a', '4b', '5a', '5b', '6a', '6b', '9a', '9b'],
+                        3: ['2a', '2b', '4a', '4b', '7a', '7b', '8a', '8b']
+                    };
+
+                    const columnNames = [
+                        '1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j',
+                        '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b',
+                        '7a', '7b', '8a', '8b', '9a', '9b'
+                    ];
+
+                    const currentRow = tableBody.rows.length + 1;  // Adjust based on table rows count
+
+                    predictions.forEach((prediction, idx) => {
+                        const cell = document.createElement('td');
+                        const columnName = columnNames[idx];
+                        const rowSpecificColumns = rowZeroColumns[currentRow];
+
+                        // Check if this column is in the zeroColumns array for the current row
+                        if (rowSpecificColumns && rowSpecificColumns.includes(columnName)) {
+                            cell.textContent = '0';  // Display 0 for specific columns
+                        } else {
+                            cell.textContent = prediction === "" ? "-" : prediction;
+                        }
+
+                        newRow.appendChild(cell);
+                    });
+
+                    tableBody.appendChild(newRow);
+                } else {
+                    alert('Error processing the image.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('downloadButton').addEventListener('click', () => {
+            // Trigger the download of the Excel file with the extracted data
+            fetch('/download-excel', {
+                method: 'GET',
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'predictions.xlsx';
+                link.click();
+            })
+            .catch(error => console.error('Error downloading Excel:', error));
+        });
+    </script>
+</body>
+</html>
